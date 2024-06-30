@@ -14,7 +14,7 @@ import { JwtAuthGuard } from "./jwt-auth.guard";
 @ApiTags('user')
 export class UserController {
   constructor(
-    private readonly userService: UserService
+      private readonly userService: UserService
   ) { }
 
   @Post('/register')
@@ -28,9 +28,9 @@ export class UserController {
 
   @Post('/login')
   async login(
-    @Body() data: LoginDto,
-    @Req() req: any
-    ) {
+      @Body() data: LoginDto,
+      @Req() req: any
+  ) {
     return this.userService.login(data);
   }
 
@@ -47,6 +47,14 @@ export class UserController {
     // return 'hello world'
   }
 
+  @Get('/list')
+  @ApiOperation({
+    summary: 'Get List of Users',
+    description: 'Retrieve a list of all users',
+  })
+  async getListOfUsers() {
+    return this.userService.getAllUsers();
+  }
 
   @Post('/logout')
   async logout(@Req() req) {
@@ -55,8 +63,8 @@ export class UserController {
 
   @Post('/change-password')
   async changePassword(
-    @Body() data: ChangePwdDto,
-    @Req() req
+      @Body() data: ChangePwdDto,
+      @Req() req
   ) {
     return this.userService.changePassword(data, req.user);
   }

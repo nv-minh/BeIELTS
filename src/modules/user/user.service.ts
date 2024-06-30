@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Redirect, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { v4 as uuid } from 'uuid';
@@ -13,14 +13,13 @@ import { Role } from "./enums/role.enum";
 import * as argon2 from 'argon2';
 import { JwtService } from "@nestjs/jwt";
 
-
 @Injectable()
 export class UserService {
-  
+
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-    private jwtService: JwtService
+      @InjectRepository(User)
+      private usersRepository: Repository<User>,
+      private jwtService: JwtService
   ) { }
 
   async register(data: RegisterDto) {
@@ -44,7 +43,7 @@ export class UserService {
   }
 
   async findUserByEmail(email: string) {
-    const user = await this.usersRepository.findOneBy({ email });
+    const user = await this.usersRepository.findOne({ email });
     return user || null;
   }
 
@@ -65,15 +64,7 @@ export class UserService {
       roles: user.roles
     };
 
-    let accessToken;
-
-    if (data.rememberMe === 'true') {
-      accessToken = this.jwtService.sign(payload, {
-        expiresIn: '7d'
-      });
-    } else {
-      accessToken = this.jwtService.sign(payload);
-    }
+    let accessToken = this.jwtService.sign(payload);
 
     return {
       ...payload,
@@ -82,46 +73,42 @@ export class UserService {
   }
 
   async logout(user: User) {
-    // return this.authServer.removeToken(user.email);
+    // Your logout logic here if needed
   }
-
 
   async changePassword(data: ChangePwdDto, user: User) {
     let isPasswordMatch = await argon2.verify(user.password, data.oldPassword);
     if (!isPasswordMatch) {
       throw new HttpException(
-        'Old password is not correct',
-        HttpStatus.BAD_REQUEST
+          'Old password is not correct',
+          HttpStatus.BAD_REQUEST
       )
     }
 
     let hashPassword = await argon2.hash(data.newPassword);
-    const updateUser = this.usersRepository.create({
-      ...user,
-      password: hashPassword,
-    });
+    user.password = hashPassword;
 
-    await this.usersRepository.save(updateUser);
-    const { password, ...userWithoutPassword } = updateUser;
+    await this.usersRepository.save(user);
+
+    const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
-  
+
   async me(user: User) {
     const { password, ...userWithoutPassword } = user;
-    return {
-      ...userWithoutPassword,
-    }
+    return userWithoutPassword;
   }
 
-  async getUserById(id) {
-      const user = await this.usersRepository.findOne({
-        where: {
-          id
-        }
-      })
-      if (!user) {
-        throw new BadRequestException('getUserById fail!')
-      }
-      return user
+  async getUserById(id: string) {
+    const user = await this.usersRepository.findOne(id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const users = await this.usersRepository.find();
+    return users;
   }
 }
