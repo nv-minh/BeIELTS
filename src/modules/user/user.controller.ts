@@ -47,14 +47,14 @@ export class UserController {
     // return 'hello world'
   }
 
-  @Get('/list')
-  @ApiOperation({
-    summary: 'Get List of Users',
-    description: 'Retrieve a list of all users',
-  })
-  async getListOfUsers() {
-    return this.userService.getAllUsers();
-  }
+  // @Get('/list')
+  // @ApiOperation({
+  //   summary: 'Get List of Users',
+  //   description: 'Retrieve a list of all users',
+  // })
+  // async getListOfUsers() {
+  //   return this.userService.getAllUsers();
+  // }
 
   @Post('/logout')
   async logout(@Req() req) {
